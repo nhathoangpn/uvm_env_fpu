@@ -1,0 +1,318 @@
+#!/bin/csh
+
+  ###-------------------------------------
+  ### setup
+  ###-------------------------------------
+  #source ../dotfile
+  source ../dotfile_short
+
+  ###-------------------------------------
+  ### Copy coverage database in cov_path.list
+  ###-------------------------------------
+  #snps/coverage/db/testdata/
+  @ num = 1 
+
+  if (-d COV) then
+    rm -rf bk_COV
+    mv COV bk_COV
+  endif
+
+  foreach covd (`cat cov_path.list | egrep -v "^#"`)
+   
+    if ($num == 1) then
+      cp -r $covd COV
+    else 
+      cp -r $covd/simv.vdb/snps/coverage/db/testdata/* COV/simv.vdb/snps/coverage/db/testdata/
+    endif
+
+    echo "$num"
+    @ num++
+
+  end
+ 
+  ###-------------------------------------
+  ### urg setup
+  ###-------------------------------------
+  set COV_DATABASE       = "COV/simv.vdb"
+
+  set COV_MARGE_DATABASE = "COV/merge.vdb"
+  set COV_DIR            = "cov_report"
+# set HPV_FILE     = "new_plan_2.hvp"
+
+  set report_type = ( \
+                      line \
+                      fsm \
+                      cond \
+                      tgl \
+                      branch \
+                      assert \
+                      group \
+                      all \
+                      all_detail \
+                      all_summary )
+
+  #############################################
+  ### directory make
+  #############################################
+  if( ! -d ${COV_DIR} ) then
+    mkdir ${COV_DIR}/
+  endif
+
+  foreach subdir ($report_type)
+    if( ! -d ${COV_DIR}/${subdir} ) then
+        mkdir ${COV_DIR}/${subdir}
+    endif
+  end
+
+
+  #############################################
+  ## DataBase Marge
+  #############################################
+  urg -full64 +urg+lic+wait -lca \
+   -log fpu_merge_urg.log \
+   -dir ${COV_DATABASE} \
+   -dbname ${COV_MARGE_DATABASE}
+ 
+#  #############################################
+#  ## Exclude list Make
+#  #############################################
+#  urg -full64 +urg+lic+wait -lca \
+#   -log fpu_urg.log \
+#   -dir ${COV_MARGE_DATABASE} \
+#   -dump full_exclusions line+fsm+cond+tgl+branch+group+assert
+# 
+
+  #############################################
+  ## Output urg report
+  #############################################
+
+  foreach cov_report_type ($report_type)
+
+    ##-----------------------
+    ## common options set
+    ##-----------------------
+    set report_dir  = "${COV_DIR}/${cov_report_type}"
+    set metric_type = "+${cov_report_type}"
+    set show_opt    = "-show brief"
+    set run_log     = "fpu_urg.log"
+    set exclude_opt = "-elfile fpu_cov_exclude.el"
+
+    ##-----------------------
+    ## uniq options set
+    ##-----------------------
+    switch ($cov_report_type)
+      case "line" :
+        set etc_opt     = "" ;
+      breaksw
+      case "fsm" :
+        set etc_opt     = "" ;
+      breaksw
+      case "cond" :
+        set etc_opt     = "" ;
+      breaksw
+      case "tgl" :
+        set etc_opt     = "" ;
+      breaksw
+      case "branch" :
+        set etc_opt     = "" ;
+      breaksw
+      case "assert" :
+        set etc_opt     = "" ;
+      breaksw
+      case "group" :
+        set etc_opt     = "" ;
+      breaksw
+      case "all" :
+        set metric_type = "+line+fsm+cond+tgl+branch+assert+group" ;
+        set etc_opt     = "" ;
+      breaksw
+      case "all_detail" 
+        set metric_type = "+line+fsm+cond+tgl+branch+assert+group" ;
+        set show_opt    = "-show tests" ;
+        ### Just use to dump format for exclude file
+        #set show_opt    = "-dump full_exclusions" ;
+        set etc_opt     = "" ;
+      breaksw
+      case "all_summary" :
+        set metric_type = "+line+fsm+cond+tgl+branch+assert+group" ;
+        set show_opt    = "-show summary 5" ;
+        set etc_opt     = ""
+      breaksw
+    endsw
+
+    ##-----------------------
+    ## urg
+    ##-----------------------
+    echo ""
+    echo " REPORT_TYPE --> $cov_report_type"
+    echo ""
+    urg -full64 +urg+lic+wait -lca \
+      -log ${run_log} \
+      -dir ${COV_MARGE_DATABASE} \
+      -metric ${metric_type} \
+      -report ${report_dir} \
+      -format both \
+      ${show_opt} \
+      ${exclude_opt} \
+      ${etc_opt}
+  end
+ 
+
+#-plan ${HPV_FILE} 
+#-xmlplan 
+###################################################################################################################
+# URG Version K-2015.09-SP1-1 Copyright (c) 1991-2015 by Synopsys Inc.
+# 
+# Note : Usage:  urg  -dir dir1 [dir2 ...]  [-dir dir3 ...] [-report dir] [-parallel ...]
+# 	     [-metric [+]line+fsm+cond+tgl+branch+assert+group]
+# 	     [-log file] [-warn no<ID>,...,no<ID>] [-warn none] [-warn none,<ID>,...,<ID>]
+# 	     [-split N] [-split metric] [-tests file] [-format text] [-format both]
+# 	     [-show tests] [-show maxtests N] [-show legalonly]
+# 	     [-fsm disable_sequence]  [-fsm disable_loop]
+# 	     [-cond exclude file] [-cond ids] [-scorefile file] [-version] [-novercheck]
+# 	     [-line nocasedef] [-tgl portsonly] [-assert minimal] [-low  N] [-high N] [-ID]
+# 	     [-show availabletests] [-show fullhier] [-show brief [line+...]] [-show summary [N]]
+# 	     [-show ratios] [-show hvpfullhier] [-show hvpprob]
+# 	     [-group maxmissing N] [-group ratio] [-group merge_across_scopes]
+# 	     [-group instcov_for_score]  [-group show_bin_values]
+# 	     [-group flex_merge_drop]  [-group db_edit_file file]
+# 	     [-group show_lpgroups_only] [-group show_usergroups_only]
+# 	     [-group show_in_design]
+# 	     [-flex_merge drop] [-flex_merge reference] [-flex_merge union]
+# 	     [-lpcov]
+# 	     [-dbname name] [-reset_coverage] [-noreport] [-f file] [+urg+lic+wait] [-hier <file>]
+# 	     [-diff]  [-map <mod>] [-mapfile <file>]
+# 	     [-elfile <file>] [-elfilelist <file>] [-excl_bypass_checks] [-excl_strict] [-excl_append_annotation]
+# 	     [-dump full_exclusions [line+fsm+cond+tgl+branch+group+assert]]
+# 	     [-plan file [-mod filter.file mod.file ] ] [-xmlplan]
+# 	     [-hvp_score_missing] [-featurefile file]
+# 	     [-legacy] [-attribute file] [-plan_columns file]
+# 	     [-userdata file] [-userdatafile file]
+# 	     [-grade [help] [... other grading options ...]]
+# 	     [-trend [help] [... other trend options ...]]
+# 	     [-parallel [... other parallel options ...]]
+# 	     [-pathmap <file>] [-mode64 | -full64] [-h | -help] [-lca] [-nofastmatch]
+# 
+# -dir <dir>               Use <dir> as directory for source data.  Multiple -dir
+#                          arguments may be given.  See user manual for how data
+#                          from multiple directories is combined into unified
+#                          tests.
+# -report <dir>            Generate report in <dir> instead of default directory.
+#                          Default report directory is 'urgReport'.
+# -log <file>              Send diagnostics to given file instead of stdout/stderr.
+# -warn no<ID>,...,no<ID>  Suppress warning messages that are specified by the ID list.
+# -warn none               Suppress all warning messages.
+# -warn none,<ID>,...,<ID> Suppress all warning messages with the exceptions specified by the ID list.
+# -metric line             Report line coverage.
+# -metric fsm              Report fsm coverage.
+# -metric cond             Report cond coverage.
+# -metric tgl              Report tgl coverage.
+# -metric branch           Report branch coverage.
+# -metric assert           Report coverage for monitored cover directives, events and assertions.
+# -metric group            Report testbench coverage (Vera or NTB coverage groups).
+# -cond exclude  <file>    Specify conditions and vectors to be excluded
+#                          from reporting for condition coverage.
+# -line nocasedef          Exclude case default lines in line coverage.
+# -fsm disable_sequence    Do not report sequences in FSM coverage.
+# -fsm disable_loop        Do not report loops in FSM coverage.
+# -tgl portsonly           Only report ports in toggle coverage.
+# -assert minimal          Only report modules and instances which have assertion in assertion coverage.
+#                          Code coverage database can not be loaded with this option.
+# -format text             Generate text report instead of HTML.
+# -elfile <file>           Exclude coverable objects specified in <file> for code/assertion/group coverage.
+# -elfilelist <file>       A <file> containing exclusion file names to be loaded.
+# -excl_bypass_checks      Bypass checks when loading exclusion files.
+# -excl_append_annotation  Keep multiple exclusion annotations for same object.
+# -excl_strict             Do not allow covered objects to be excluded.
+#                          '-elfile <file>' must be given when this option is used.
+# -dump full_exclusions    Dump separate exclude files for all the metrics that URG willgenerate reports for.
+# -dump full_exclusions line    Dump separate exclusion file for line coverage.
+# -dump full_exclusions fsm     Dump separate exclusion file for fsm coverage.
+# -dump full_exclusions cond    Dump separate exclusion file for cond coverage.
+# -dump full_exclusions tgl     Dump separate exclusion file for tgl coverage.
+# -dump full_exclusions branch  Dump separate exclusion file for branch coverage.
+# -dump full_exclusions group   Dump separate exclusion file for testbench coverage.
+# -dump full_exclusions assert  Dump separate exclusion file for assertion coverage.
+# -hier <file>             Specify the module definitions, instances, hierarchies, and source files
+#                          you want to exclude or include for report.
+# -format both             Generate both HTML and text reports.
+# -show tests              Show which tests covered a given object. See
+#                          -grade help for a description of the test
+#                          records shown when -show tests is given.
+# -show maxtests N         Upper limit for number of tests reported for each
+#                          object using -show tests. Default is 3 tests.
+# -show legalonly          Suppress showing illegal bins for a covergroup in group coverage report.
+# -show availabletests     List all available tests names under the specified toplevel directories. Exit without generating reports.
+# -show fullhier           Show full hierarchy, including instances that have a hierarchical coverable count of zero.
+# -show brief [line+...]   Show uncovered data only. An optional metric list can be added to enable metric selection.
+# -show summary [N]        Only show summary report files. N is optional, and specifies how many levels of hierarchy to show. 
+# -show ratios             Show number of covered objects and total number of objects with each score.
+# -group maxmissing N      Show at most N uncovered bins for any coverpoint or cross. Default value is 256.
+# -group ratio             Compute covergroup scores and overall group score as a simple ratio of covered divided by coverable.
+# -group merge_across_scopes Merge covergroups across module scopes and hierarchy.
+# -group instcov_for_score Compute scores using coverage of each instance for covergroups with instance coverage enabled.
+# -group show_bin_values   Display bin definitions of coverpoints. Requires -covg_dump_range at run time.
+# -group flex_merge_drop   Enables flexible merging for covergroups.
+# -group db_edit_file file Specify the filename for editing database.
+# -group show_lpgroups_only       Skip user written covergroups and show only Low Power covergroups.
+# -group show_usergroups_only     Skip Low Power covergroups and show only user written covergroups.
+# -group show_in_design    Show the group coverage in design hierarchy.
+# -flex_merge drop         Enables drop mode of flexible merging for covergroups.
+# -flex_merge reference    Enables reference mode of flexible merging for covergroups and assertions.
+# -flex_merge union        Enables union mode of flexible merging for covergroups.
+# -lpcov                   Report Low Power covergroups in a separate hierarchy page.
+# -split N                 Split pages that are more than N kbytes long.
+# -split metric            Split all module and instance reports by metric.
+# -low N                   Show any coverage number below N percent in red.
+# -high N                  Show any coverage number above N percent in green.
+# -grade                   Grade tests.  For details do 'urg -grade help'.
+# -echo                     Echo bias file generation. For details do 'urg -echo help'.
+# -scorefile file          Use weights specified in file for metrics. By default,
+#                          all metrics are weighted evenly to compute the score.
+# -version                 Display tool version and CovDB version.
+# -novercheck              Disable CovDB version check.
+# -dbname dirname          Create a merged database in directory 'dirname.vdb'.
+#                          The name of the merged test will be 'test' by default.
+# -dbname dirname/testname Create a merged database in directory 'dirname.vdb'.
+#                          The name of the merged test will be 'testname'.
+# -reset_coverage          Reset the scores of all coverable objects.  Must be used in conjunction with -dbname.
+# -db_max_tests <number>   Set max number of tests to be stored for each object.
+# -excl_no_cgdef_update    Don't update the group definition score after excluding its instance(s).
+# -noreport                ONLY generate the merged files but not generate the HTML reports.
+# -f file                  Specify multiple directories for source data in a file.
+# -tests file              Specify a file containing names of tests to report from specified directories.
+# -ID                      Display the hostid or dongle ID for your machine.
+# +urg+lic+wait            Wait for network license if none is available when the job starts.
+# -lca                     Enable limited customer availability features and print warning message.
+# -mode64 | -full64        Use 64 bit URG.
+# -pathmap <file>          Relocate source files with mapping rules in <file>.
+# -diff                    Diff two databases and generate a diff report. Only
+#                          supported for assertion and testbench coverage.
+# -map <mod>               Report on merging mapped modules coverage.
+# -mapfile <file>          Report on merging mapped modules coverage given in <file>.
+# -plan file               Report for the Hierarchical Verification Plan given in 'file'.
+# -mod file                Read filtered/overridden HVP data from 'file'. The -plan option must also be given.
+# -xmlplan                 Also report HVP in the XML format.
+# -featurefile file        Specify a file containing feature names which will be grouped together with coverage database directories.
+# -hvp_score_missing       Enable unmatched coverage sources to affect plan scores. Unmatched coverage source will be scored as zero.
+# -legacy                  Generate the legacy format URG report.
+# -attribute file          Specify a file containing names of attributes to report.  The -plan option must also be given.
+# -plan_columns file       Specify a file containing names of metrics and attributes to report.  The -plan option must also be given.
+# -userdata file           Read HVP data for annotation from 'file'.  The -plan option must also be given.
+# -userdatafile file       Specify a file containing HVP data files names for annotation.  The -plan option must also be given.
+# -show hvpfullhier        Show full hvp hierarchy, including all the features which are filtered out.
+# -show hvpprob            Show problem hvp hierarchy only.
+# -show stats              Show statistics report, including diagnostic information, highlighting possible problems in the plan.
+# -trend                   Generate trend charts by existing multiple urgReports.  For details do 'urg -trend help'.
+# -cond ids                Show the expression and vector IDs in condition coverage report.
+# -parallel                Parallel mode.  For details do 'urg -help -parallel'.
+# -h | -help               Print this message.
+# 
+# 
+# Summary report files generated in -report directory:
+#    dashboard.html        Overview of coverage for design/testbench.
+#    hierarchy.html        Hierarchical coverage for each instance in design.
+#    modlist.html          Coverage for each module in design.
+#    groups.html           Information for each coverage group.
+#    tests.html            Test information.
+# 

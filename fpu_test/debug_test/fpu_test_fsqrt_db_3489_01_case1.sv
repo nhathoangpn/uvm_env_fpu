@@ -1,0 +1,107 @@
+//==================================================================================================
+// Owner:    Hoang Pham
+// Filename: fpu_test_sample
+// History:  2019.06.21 Create new version
+//==================================================================================================
+
+class fpu_test_fsqrt_db_3489_01_case1 extends fpu_test_base;
+	`uvm_component_utils(fpu_test_fsqrt_db_3489_01_case1)
+
+	`include "../fpu_top/fpu_def.svh"
+
+	fpu_seq_base seq_srandom;
+	fpu_seq_base seq_sdirect;
+	fpu_seq_base seq_final;
+
+	bit [11:0][31:0] a = {
+                              32'h7f7fffff, //+Largest finite
+	                      32'h41200000, //+10
+	                      32'h41100000, //+9
+	                      32'h41000000, //+8
+	                      32'h40e00000, //+7
+	                      32'h40c00000, //+6
+	                      32'h40a00000, //+5
+	                      32'h40800000, //+4
+	                      32'h40400000, //+3
+	                      32'h40000000, //+2
+	                      32'h3f800000, //+1
+                              32'h00000000  //+0
+                             };
+
+	function new(string name, uvm_component parent);
+		super.new(name, parent);
+	endfunction
+
+	function void build_phase(uvm_phase phase);
+		super.build_phase(phase);
+		uvm_top.set_timeout(0);
+	endfunction
+
+	task run_phase(uvm_phase phase);
+		phase.phase_done.set_drain_time(this, 110);
+		phase.raise_objection(this, {get_name, "run_phase starts"});
+		`uvm_info(get_name(), "run_phase starts", UVM_FULL)
+
+		m_fpu_agent_cfg.fpu_vif.rst_gen_direct(1, 10);
+
+		seq_srandom = fpu_seq_base::type_id::create("seq_srandom");
+		seq_sdirect = fpu_seq_base::type_id::create("seq_sdirect");
+		seq_final   = fpu_seq_base::type_id::create("seq_final");
+
+		for (int i = 0; i < 12; i++) begin 
+			for (int j = 0; j < 10; j++) begin
+				if (!seq_srandom.randomize() with
+					{sub_num_seq_item == 1;
+					 sqb_valid_i == 1;
+					 sqb_op_i == `FSQRT;
+					 sqb_operand_a_i == a[i];
+					 sqb_rm_i == `RNE;
+					 sqb_fn_i == 0;
+					 sqb_num_wait_clk == 15;
+					 sqb_test_final == 0;
+					 sqb_handshake_i == 0;
+					});
+
+				seq_srandom.start(m_fpu_env.m_fpu_agent.m_fpu_sqr);
+
+			end
+		end
+
+
+//		for (int i = 0; i < 8388608; i++) begin //Mantissa: 00_0000 to 7F_FFFF
+		for (int i = 0; i < 100; i++) begin //Mantissa: 00_0000 to 7F_FFFF
+			for (int j = 0; j < 2; j++) begin //Exponent: Even <-> Odd
+				if (!seq_srandom.randomize() with
+					{sub_num_seq_item == 1;
+					 sqb_valid_i == 1;
+					 sqb_op_i == `FSQRT;
+					 sqb_operand_a_i[31] == 0; //Sign: Positive
+					 sqb_operand_a_i[30:24] == 7'b011_1111;
+					 sqb_operand_a_i[23] == j;
+					 sqb_operand_a_i[22:0] == i;
+					 sqb_rm_i == `RNE;
+					 sqb_fn_i == 0;
+					 sqb_user_i inside{[8'h00:8'hFF]};
+					 sqb_num_wait_clk == 15;
+					 sqb_test_final == 0;
+					 sqb_handshake_i == 0;
+					})
+`uvm_error("RANDOM SEQUENCE", "randomization failure for sequence")
+
+				seq_srandom.start(m_fpu_env.m_fpu_agent.m_fpu_sqr);
+			end
+
+		end
+
+		if (!seq_final.randomize() with
+			{sub_num_seq_item == 1;
+			 sqb_num_wait_clk == 1;
+			 sqb_test_final   == 1;})
+`uvm_error("RANDOM SEQUENCE", "randomization failure for sequence")
+
+		seq_final.start(m_fpu_env.m_fpu_agent.m_fpu_sqr);
+
+		phase.drop_objection(this, {get_name, "run_phase finishes"});
+		`uvm_info(get_name(), "run_phase finishes", UVM_FULL)
+	endtask
+endclass

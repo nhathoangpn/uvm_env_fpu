@@ -1,0 +1,87 @@
+****How to run simulation from scratch:
+	step 1: test scenarios preparation step
+	add test scenarios into fpu_test/fpu_test_pkg.sv
+
+	step 2: running-script preparation step
+	cd fpu_sim
+	add test scenrario runing script into run_test (reference: run_test_blackbox, run_scenario_sample and options in NOTE)
+
+	step 3: compile C-model
+	./compile_c_model (or ./re_compile_c_model)
+
+	step 4: environment preparation step
+	modify RTL_DIR varibale pointing to RTL directory in dotfile if any
+	modify EDA tool source path in dotfile if any
+	./source dotfile
+
+	step 5: run simulation
+	./run_test
+
+
+****How to run regresison:
+	step 1: compile C-model
+	cd fpu_sim
+	./compile_c_model (or ./re_compile_c_model)
+
+	step 2: environment preparation step
+	modify RTL_DIR varibale pointing to RTL directory in dotfile if any
+	modify EDA tool source path in dotfile if any
+
+	step 3: run simulation
+	./run_test_blackbox
+
+
+****NOTE:
+	1. env only need to compile once at the beginning for each combination of 2.2 options
+
+	2. Makefile config options
+		2.1
+			- CCOV_EN      : enable code coverage               | default = off
+			- WAVE_EN      : enable dump waveform               | default = off
+			- UVM_TEST_NAME: test pattern name                  | default = fpu_test_sample
+			- RAND_SEED    : random seed                        | default = 1
+			- ENV_DEF      : select debug or regression wrapper | default = +define+FOR_REGRESSION
+			- DEBUG_TEST_EN: enable when run debug test         | default = off
+			*Note: WAVE_EN, CCOV_EN are only used in compilation and simulation step
+						 RAND_SEED, UVM_TEST_NAME are only used in simulation step
+						 ENV_DEF=FOR_DEBUG is not supported anymore
+
+		2.2
+	  	- ARITH_EN : arithmetic module is instanced      |default = on
+	  	- CMPCNV_EN: compare/convert module is instanced |default = on
+	  	- SPMATH_EN: special math module is instanced    |default = on
+	  	- EXPLOG_EN: exp/log module is instanced         |default = on
+
+	3. Makefile run options
+		- compile     : run vcs compile
+		- run_sim     : run vcs simulation
+		- dve         : invoke DVE
+		- report      : get code coverage report
+		- clean       : clean temporary files
+		- cleanall    : clean ccov and log directories also
+		*Note: with compile, run_sim, report options, please add 2.2 options to turn on/off modules
+					 the compile options and 2.2 options must match to run_sim options and 2.2 options
+
+		*Example:
+		make compile                                     ARITH_EN=on  CMPCNV_EN=off SPMATH_EN=off EXPLOG_EN=off CCOV_EN=on
+		make run_sim UVM_TEST_NAME=fpu_para_test_en_arth ARITH_EN=on  CMPCNV_EN=off SPMATH_EN=off EXPLOG_EN=off CCOV_EN=on
+
+		make report                                      ARITH_EN=on  CMPCNV_EN=off SPMATH_EN=off EXPLOG_EN=off CCOV_EN=on
+
+	4. Scripting
+		- compile_c_model            : compile C model from beginning
+		- re_compile_c_model         : re-compile C model when updating testfloat and softfloat
+		- report_ccov                : make code coverage report for all parameter configurations
+		- report.csh                 : report result report for all test scenarios
+		- report_result_all          : report result report for case by case (there are some explanation inside this script)
+		- run_debug_test_blackbox.csh: run debug test blackbox
+		- run_regresison_all         : run regression all test
+		- run_scenario_sample        : run sample test
+		- run_test_blackbox          : run regression blackbox test
+
+	5. C-model
+		- reference testfloat/Lib/README
+
+	6. Remained items:
+		- whitebox sva checker
+		- whitebox functional coverage model

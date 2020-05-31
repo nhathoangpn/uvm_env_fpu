@@ -1,0 +1,15 @@
+make report              CMPCNV_EN=off                             CCOV_EN=on
+make report ARITH_EN=off                                           CCOV_EN=on
+make report                            SPMATH_EN=off               CCOV_EN=on
+make report                                          EXPLOG_EN=off CCOV_EN=on
+make report ARITH_EN=on  CMPCNV_EN=off SPMATH_EN=off EXPLOG_EN=off CCOV_EN=on
+make report ARITH_EN=off CMPCNV_EN=on  SPMATH_EN=off EXPLOG_EN=off CCOV_EN=on
+make report ARITH_EN=off CMPCNV_EN=off SPMATH_EN=on  EXPLOG_EN=off CCOV_EN=on
+make report ARITH_EN=off CMPCNV_EN=off SPMATH_EN=on  EXPLOG_EN=on  CCOV_EN=on
+make report ARITH_EN=on  CMPCNV_EN=on  SPMATH_EN=off EXPLOG_EN=off CCOV_EN=on
+make report ARITH_EN=on  CMPCNV_EN=off SPMATH_EN=on  EXPLOG_EN=off CCOV_EN=on
+make report ARITH_EN=on  CMPCNV_EN=off SPMATH_EN=on  EXPLOG_EN=on  CCOV_EN=on
+make report ARITH_EN=off CMPCNV_EN=on  SPMATH_EN=on  EXPLOG_EN=off CCOV_EN=on
+make report ARITH_EN=off CMPCNV_EN=on  SPMATH_EN=on  EXPLOG_EN=on  CCOV_EN=on
+make report ARITH_EN=on  CMPCNV_EN=on  SPMATH_EN=on  EXPLOG_EN=off CCOV_EN=on
+make report ARITH_EN=on  CMPCNV_EN=on  SPMATH_EN=on  EXPLOG_EN=on  CCOV_EN=on

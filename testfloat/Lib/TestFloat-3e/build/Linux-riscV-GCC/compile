@@ -1,0 +1,37 @@
+#!/bin/csh -f
+
+cd ../../../
+tar -xjf gmp-6.1.2.tar.bz2
+sleep 5
+tar -xzf mpfr-4.0.2.tar.gz
+sleep 5
+
+cd ./gmp-6.1.2/
+./configure
+sleep 5
+make -j 8
+cd ../mpfr-4.0.2/
+./configure "--with-gmp-build=../gmp-6.1.2"
+sleep 5
+make -j 8
+sleep 5
+cp -rf ./src/mpfr-impl.h     ../SoftFloat-3e/source/include
+cp -rf ./src/mpfr-thread.h   ../SoftFloat-3e/source/include
+cp -rf ./src/mpfr-gmp.h      ../SoftFloat-3e/source/include
+cp -rf ./src/mpfr-longlong.h ../SoftFloat-3e/source/include
+cp -rf ./src/mparam.h        ../SoftFloat-3e/source/include
+cp -rf ./src/generic         ../SoftFloat-3e/source/include
+cp -rf ./src/mpfr.h          ../SoftFloat-3e/source/include
+cp -rf ./src/mpfr-cvers.h    ../SoftFloat-3e/source/include
+cp -rf ./src/mpfr-sassert.h  ../SoftFloat-3e/source/include
+cp -rf ./src/gmp.h           ../SoftFloat-3e/source/include
+
+cd ../SoftFloat-3e/build/Linux-riscV-GCC/
+make clean
+make -j 8
+sleep 5
+cd ../../../TestFloat-3e/build/Linux-riscV-GCC/
+#setenv LD_LIBRARY_PATH ../../../mpfr-4.0.2/src/.libs
+setenv LD_LIBRARY_PATH ../../..//mpfr-4.0.2/src/.libs:../../../gmp-6.1.2/.libs:${LD_LIBRARY_PATH}
+make clean
+make -j 8

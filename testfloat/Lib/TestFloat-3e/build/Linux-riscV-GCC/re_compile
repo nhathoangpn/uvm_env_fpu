@@ -1,0 +1,10 @@
+#!/bin/csh -f
+
+cd ../../../SoftFloat-3e/build/Linux-riscV-GCC/
+make clean
+make -j 8
+sleep 2
+cd ../../../TestFloat-3e/build/Linux-riscV-GCC/
+setenv LD_LIBRARY_PATH ../../..//mpfr-4.0.2/src/.libs:../../../gmp-6.1.2/.libs:${LD_LIBRARY_PATH}
+make clean
+make -j 8
