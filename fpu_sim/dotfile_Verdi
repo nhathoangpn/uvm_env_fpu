@@ -1,0 +1,56 @@
+source /home/eda_adm/SETUP/VCS-MX_2017.12-SP2
+source /home/eda_adm/SETUP/VERDI3_2017.12-SP2-1
+
+setenv tab $VERDI_HOME/share/PLI/VCS/LINUXAMD64/novas.tab
+setenv pli $VERDI_HOME/share/PLI/VCS/LINUXAMD64/pli.a
+setenv LD_LIBRARY_PATH $VERDI_HOME/share/PLI/VCS
+
+setenv PRJ_HOME      ${PWD}/..
+
+setenv AGENT_DIR     ${PRJ_HOME}/fpu_agent
+setenv ENV_DIR       ${PRJ_HOME}/fpu_env
+setenv TEST_DIR      ${PRJ_HOME}/fpu_test
+setenv TOP_DIR       ${PRJ_HOME}/fpu_top
+setenv SIM_DIR       ${PRJ_HOME}/fpu_sim
+setenv FLIST_DIR     ${PRJ_HOME}/fpu_flist
+setenv TESTFLOAT_DIR ${PRJ_HOME}/testfloat
+
+#setenv LD_LIBRARY_PATH ${TESTFLOAT_DIR}/Lib/mpfr-4.0.2/src/.libs
+#setenv LD_LIBRARY_PATH ${TESTFLOAT_DIR}/Lib/gmp-6.1.2/.libs
+#setenv LD_LIBRARY_PATH ${TESTFLOAT_DIR}/Lib/mpfr-4.0.2/src/.libs:${TESTFLOAT_DIR}/Lib/gmp-6.1.2/.libs
+#setenv LD_LIBRARY_PATH ${TESTFLOAT_DIR}/Lib/mpfr-4.0.2/src/.libs:${TESTFLOAT_DIR}/Lib/gmp-6.1.2/.libs:${LD_LIBRARY_PATH}
+
+if ( $?LD_LIBRARY_PATH == 0) then
+	echo "this variable is empty"
+	setenv LD_LIBRARY_PATH ${TESTFLOAT_DIR}/Lib/mpfr-4.0.2/src/.libs:${TESTFLOAT_DIR}/Lib/gmp-6.1.2/.libs
+else
+	echo "this variable is NOT empty"
+	setenv LD_LIBRARY_PATH ${TESTFLOAT_DIR}/Lib/mpfr-4.0.2/src/.libs:${TESTFLOAT_DIR}/Lib/gmp-6.1.2/.libs:${LD_LIBRARY_PATH}
+endif
+
+#setenv RTL_DIR       ${PRJ_HOME}/../design/
+#setenv RTL_DIR       ${PRJ_HOME}/../rtl_version/20190830_fpu_rtl_rev.0.2.0
+#setenv RTL_DIR       ${PRJ_HOME}/../rtl_version/20190905_fpu_rtl_rev.0.2.1
+#setenv RTL_DIR       ${PRJ_HOME}/../rtl_version/20190907_fpu_rtl_rev.0.2.2
+#setenv RTL_DIR       ${PRJ_HOME}/../rtl_version/20190913_fpu_rtl_rev.0.2.3
+#setenv RTL_DIR       ${PRJ_HOME}/../rtl_version/20190921_fpu_rtl_rev.0.2.4
+#setenv RTL_DIR       ${PRJ_HOME}/../rtl_version/20190925_fpu_rtl_rev.0.2.5
+#setenv RTL_DIR       ${PRJ_HOME}/../rtl_version/20191003_fpu_rtl_rev.0.2.6
+#setenv RTL_DIR       ${PRJ_HOME}/../rtl_version/20191010_fpu_rtl_rev.0.2.7
+#setenv RTL_DIR       ${PRJ_HOME}/../rtl_version/20191017_fpu_rtl_rev.0.2.8
+#setenv RTL_DIR       ${PRJ_HOME}/../rtl_version/20191023_fpu_rtl_rev.0.2.9
+#setenv RTL_DIR       ${PRJ_HOME}/../rtl_version/20191024_fpu_rtl_rev.0.2.10
+#setenv RTL_DIR       ${PRJ_HOME}/../rtl_version/20191026_fpu_rtl_rev.0.2.11
+#setenv RTL_DIR       ${PRJ_HOME}/../rtl_version/20191031_fpu_rtl_rev.0.2.12
+#setenv RTL_DIR       ${PRJ_HOME}/../rtl_version/20191031_fpu_rtl_rev.0.2.13
+#setenv RTL_DIR       ${PRJ_HOME}/../rtl_version/20191106_fpu_rtl_rev.0.2.14
+#setenv RTL_DIR       ${PRJ_HOME}/../rtl_version/20191114_fpu_rtl_rev.0.2.15
+#setenv RTL_DIR       ${PRJ_HOME}/../rtl_version/20191118_fpu_rtl_rev.0.3.1
+#setenv RTL_DIR       ${PRJ_HOME}/../rtl_version/20191122_fpu_rtl_rev.0.3.2
+#setenv RTL_DIR       ${PRJ_HOME}/../rtl_version/20191126_fpu_rtl_rev.0.3.3
+#setenv RTL_DIR       ${PRJ_HOME}/../rtl_version/20191126_fpu_rtl_rev.0.3.4
+#setenv RTL_DIR       ${PRJ_HOME}/../rtl_version/20191127_fpu_rtl_rev.0.3.5
+#setenv RTL_DIR       ${PRJ_HOME}/../rtl_version/20191202_fpu_rtl_rev.0.3.6
+#setenv RTL_DIR       ${PRJ_HOME}/../rtl_version/20191202_fpu_rtl_rev.0.3.7
+#setenv RTL_DIR       ${PRJ_HOME}/../rtl_version/20191204_fpu_rtl_rev.0.3.8
+setenv RTL_DIR       ${PRJ_HOME}/../rtl_version/20191206_fpu_rtl_rev.0.3.9
